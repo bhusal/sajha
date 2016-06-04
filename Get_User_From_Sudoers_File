@@ -1,0 +1,51 @@
+
+Wednesday, June 1, 2016
+Script - Get user list of users who has sudo access on the system along with account status
+
+Pre-requisite tasks
+1. Set up passwordless authentication
+2. Grant root sudo access to user who is going to run this script
+4. Tested on Solaris 10 servers
+[bhusal@sunserv01]$$ pwd
+/export/home/kbhusal/bin
+[bhusal@sunserv01]$ cat chk_sudouser.sh
+#!/bin/bash
+# Kamal Bhusal
+# Wed Jun  1 11:54:13 EDT 2016
+# Get all users on the system who has sudo access and also check account status
+# @expanor LLC
+#
+LOGFILE="logs/UserLog/User_sudo_access_`date "+%m%d%Y_time.%H-%M-%S.log"`"
+#for i in 192.168.10.110 192.168.10.111
+for i in `cat ../etc/hosts.ip | grep -v "#" | awk '{print $1}'`
+do
+    echo "           " >>$LOGFILE
+    echo "Please wait ... checking server $i"
+    echo "--------------------- Checking $i server" >>$LOGFILE
+    echo "           " >>$LOGFILE
+    ssh -q $i 'for AUSERS in  `listusers | /usr/bin/awk '\''{print $1}'\'' | /usr/bin/tr "\n" " "`; do echo; \
+        echo "--------------------"; \
+        echo "chcking $AUSERS  user for sudo access"; \
+        /usr/local/bin/sudo -l -U  $AUSERS; echo; \
+        echo "Checking Account password status"; \
+        /usr/local/bin/sudo passwd -s $AUSERS; done' >> $LOGFILE
+    #echo "-------------------" >> $LOGFILE
+    echo "           " >>$LOGFILE
+    echo "____________________________End______________________" >> $LOGFILE
+    echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" >> $LOGFILE
+done
+more $LOGFILE
+# EOF
+[bhusal@sunserv01]$
+
+
+[bhusal@sunserv01]$ more ../etc/hosts.ip
+192.168.10.11 sunserv1
+192.168.10.12   sunserv2
+#192.168.10.13   sunserv3
+192.168.10.14 sunserv4
+192.168.10.15 sunserv5
+192.168.10.16 sunserv6
+192.168.10.17 sunserv7
+192.168.10.19 sunserv8
+192.168.10.20 sunserv9
